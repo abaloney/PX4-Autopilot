@@ -30,19 +30,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 ############################################################################
-
-
-add_subdirectory(adc)
-add_subdirectory(../stm32_common/board_critmon board_critmon)
-add_subdirectory(../stm32_common/board_hw_info board_hw_info)
-add_subdirectory(../stm32_common/board_reset board_reset)
-add_subdirectory(../stm32_common/dshot dshot)
-add_subdirectory(../stm32_common/canvesc canvesc)
-add_subdirectory(../stm32_common/hrt hrt)
-add_subdirectory(../stm32_common/led_pwm led_pwm)
-add_subdirectory(../stm32_common/io_pins io_pins)
-add_subdirectory(../stm32_common/spi spi)
-add_subdirectory(../stm32_common/tone_alarm tone_alarm)
-add_subdirectory(../stm32_common/version version)
-
-add_subdirectory(px4io_serial)
+px4_add_module(
+	MODULE drivers__canvesc
+	MAIN canvesc
+	STACK_MAIN 1200
+	SRCS
+		canvesc.cpp
+		#canvesc_Telemetry.cpp
+	DEPENDS
+		#arch_io_pins
+		arch_canvesc
+		mixer
+		mixer_module
+		output_limit
+	MODULE_CONFIG
+		module.yaml
+	)

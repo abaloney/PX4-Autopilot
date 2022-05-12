@@ -26,7 +26,8 @@ px4_add_board(
 		camera_trigger
 		differential_pressure # all available differential pressure drivers
 		distance_sensor # all available distance sensor drivers
-		dshot
+		#dshot
+		canvesc
 		gps
 		#heater
 		#imu # all available imu drivers
@@ -47,7 +48,7 @@ px4_add_board(
 		pwm_out_sim
 		pwm_out
 		px4io
-		roboclaw
+		#roboclaw
 		rpm
 		smart_battery/batmon
 		telemetry # all available telemetry drivers
