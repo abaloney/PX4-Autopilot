@@ -404,4 +404,48 @@ __EXPORT extern void up_dshot_trigger(void);
  */
 __EXPORT extern int up_dshot_arm(bool armed);
 
+/**
+ * Intialise the Dshot outputs using the specified configuration.
+ *
+ * @param channel_mask      Bitmask of channels (LSB = channel 0) to enable.
+ *              This allows some of the channels to remain configured
+ *              as GPIOs or as another function.
+ * @param dshot_pwm_freq    Frequency of DSHOT signal. Usually DSHOT150, DSHOT300, DSHOT600 or DSHOT1200
+ * @return OK on success.
+ */
+__EXPORT extern int up_canvesc_init(uint32_t channel_mask, unsigned dshot_pwm_freq);
+
+/**
+ * Set the current dshot throttle value for a channel (motor).
+ *
+ * @param channel   The channel to set.
+ * @param throttle  The output dshot throttle value in [0 = DSHOT_DISARM_VALUE, 1 = DSHOT_MIN_THROTTLE, 1999 = DSHOT_MAX_THROTTLE].
+ * @param telemetry If true, request telemetry from that motor
+ */
+__EXPORT extern void up_canvesc_motor_data_set(unsigned channel, uint16_t throttle, bool telemetry);
+
+/**
+ * Send DShot command to a channel (motor).
+ *
+ * @param channel   The channel to set.
+ * @param command   dshot_command_t
+ * @param telemetry If true, request telemetry from that motor
+ */
+__EXPORT extern void up_canvesc_motor_command(unsigned channel, uint16_t command, bool telemetry);
+
+/**
+ * Trigger dshot data transfer.
+ */
+__EXPORT extern void up_canvesc_trigger(void);
+
+/**
+ * Arm or disarm dshot outputs (This will enable/disable complete timer for safety purpose.).
+ *
+ * When disarmed, dshot output no pulse.
+ *
+ * @param armed     If true, outputs are armed; if false they
+ *          are disarmed.
+ */
+__EXPORT extern int up_canvesc_arm(bool armed);
+
 __END_DECLS
