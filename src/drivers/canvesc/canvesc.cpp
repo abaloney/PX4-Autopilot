@@ -60,12 +60,15 @@ Canvesc::~Canvesc()
 
 int Canvesc::init()
 {
+	PX4_INFO("inside Canvesc::init - Here 1");
 	// do regular cdev init
 	int ret = CDev::init();
 
 	if (ret != OK) {
 		return ret;
 	}
+
+	PX4_INFO("inside Canvesc::init - Here 2 %s", CANVESC_OUTPUT_BASE_DEVICE_PATH);
 
 	// try to claim the generic PWM output device node as well - it's OK if we fail at this
 	_class_instance = register_class_devname(CANVESC_OUTPUT_BASE_DEVICE_PATH);
@@ -76,14 +79,22 @@ int Canvesc::init()
 		PX4_ERR("FAILED registering class device");
 	}
 
+	PX4_INFO("inside Canvesc::init - Here 2");
+
 	_mixing_output.setDriverInstance(_class_instance);
 
 	// Getting initial parameter values
 	update_params();
 
+	PX4_INFO("inside Canvesc::init - Here 3");
+
 	set_mode(MODE_4PWM); // SP: This might want to be pulled from parameters
 
+	PX4_INFO("inside Canvesc::init - Here 4");
+
 	ScheduleNow();
+
+	PX4_INFO("inside Canvesc::init - Here 5");
 
 	return OK;
 }
@@ -389,6 +400,8 @@ bool Canvesc::updateOutputs(bool stop_motors, uint16_t outputs[MAX_ACTUATORS],
 
 void Canvesc::Run()
 {
+	PX4_INFO("Inside Canvesc::Run");
+
 	if (should_exit()) {
 		ScheduleClear();
 		_mixing_output.unregister();
@@ -465,6 +478,8 @@ void Canvesc::update_params()
 
 int Canvesc::ioctl(file *filp, int cmd, unsigned long arg)
 {
+	PX4_INFO("Inside Canvesc::ioctl");
+
 	int ret;
 
 	// try it as a Capture ioctl next
@@ -478,7 +493,7 @@ int Canvesc::ioctl(file *filp, int cmd, unsigned long arg)
 	switch (_mode) {
 	case MODE_1PWM:
 	case MODE_4PWM:
-		ret = pwm_ioctl(filp, cmd, arg); //CHANGE THIS TO CAN BUS SEND. Look at UAVCAN driver
+		ret = canvesc_ioctl(filp, cmd, arg); //CHANGE THIS TO CAN BUS SEND. Look at UAVCAN driver
 		break;
 
 	default:
@@ -494,7 +509,7 @@ int Canvesc::ioctl(file *filp, int cmd, unsigned long arg)
 	return ret;
 }
 
-int Canvesc::pwm_ioctl(file *filp, const int cmd, const unsigned long arg)
+int Canvesc::canvesc_ioctl(file *filp, const int cmd, const unsigned long arg)
 {
 	int ret = OK;
 

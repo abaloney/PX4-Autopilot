@@ -59,7 +59,7 @@ __BEGIN_DECLS
  * PX4FMU with PX4IO connected) there may be other devices that
  * respond to this protocol.
  */
-#define CANVESC_OUTPUT_BASE_DEVICE_PATH "/dev/canvesc_output"
+#define CANVESC_OUTPUT_BASE_DEVICE_PATH "/dev/canvesc"
 #define CANVESC_OUTPUT0_DEVICE_PATH	"/dev/canvesc_output0"
 #define CANVESC_OUTPUT1_DEVICE_PATH	"/dev/canvesc_output1"
 
