@@ -34,6 +34,10 @@
 
 #include <drivers/device/device.h>
 #include <drivers/drv_input_capture.h>
+<<<<<<< HEAD
+=======
+#include <drivers/drv_canvesc.h>
+>>>>>>> 224d9ef273... in progress
 #include <drivers/drv_mixer.h>
 #include <lib/mixer_module/mixer_module.hpp>
 #include <px4_platform_common/getopt.h>
@@ -234,7 +238,7 @@ private:
 
 	//void handle_new_telemetry_data(const int motor_index, const CanvescTelemetry::EscData &data);
 
-	int pwm_ioctl(file *filp, const int cmd, const unsigned long arg);
+	int canvesc_ioctl(file *filp, const int cmd, const unsigned long arg);
 
 	int request_esc_info();
 

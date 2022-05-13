@@ -36,7 +36,11 @@
 #include <px4_platform_common/micro_hal.h>
 #include <stm32_dma.h>
 #include <stm32_tim.h>
+<<<<<<< HEAD
 #include <drivers/drv_pwm_output.h>
+=======
+#include <drivers/drv_canvesc.h>
+>>>>>>> 224d9ef273... in progress
 //#include <px4_arch/canvesc.h>
 //#include <px4_arch/io_timer.h>
 //#include <drivers/drv_pwm_output.h>

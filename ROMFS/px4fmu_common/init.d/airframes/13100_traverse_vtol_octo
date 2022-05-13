@@ -28,7 +28,10 @@
 
 param set-default PWM_AUX_DIS5 950
 #param set-default PWM_MAIN_RATE 400
-param set-default CANVESC_RATE 100
+param set-default CANVESC_MOT_RATE 100
+param set-default CANVESC_BUS_RATE 1000
+param set-default CANVESC_MIN 7000
+param set-default CANVESC_PP 7
 
 param set-default PWM_AUX_RATE 50
 

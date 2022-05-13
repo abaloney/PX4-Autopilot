@@ -140,6 +140,7 @@ load(const char *devname, const char *fname, bool append)
 	/* open the device */
 	if ((dev = px4_open(devname, 0)) < 0) {
 		PX4_ERR("can't open %s\n", devname);
+		PX4_ERR("return val from px4_open = %d", dev);
 		return 1;
 	}
 

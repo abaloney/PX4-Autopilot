@@ -91,6 +91,21 @@ then
 		fi
 	fi
 
+<<<<<<< HEAD
+=======
+	if [ $OUTPUT_MODE = canvesc ]
+	then
+		#play a custom tune...
+		set OUTPUT_CMD canvesc
+		tune_control play -t 3
+	fi
+
+	if [ $OUTPUT_MODE = io ]
+	then
+		. ${R}etc/init.d/rc.io
+	fi
+
+>>>>>>> 224d9ef273... in progress
 	#
 	# Start IO for PWM output or RC input if needed.
 	#
@@ -156,6 +171,7 @@ then
 	if [ $OUTPUT_MODE = canvesc ]
 	then
 		set OUTPUT_DEV /dev/canvesc
+		tune_control play -t 11
 	fi
 
 	if mixer load ${OUTPUT_DEV} ${MIXER_FILE}
