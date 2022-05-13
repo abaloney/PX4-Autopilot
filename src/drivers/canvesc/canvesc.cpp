@@ -52,7 +52,7 @@ Canvesc::~Canvesc()
 	up_canvesc_arm(false);
 
 	// clean up the alternate device node
-	unregister_class_devname(PWM_OUTPUT_BASE_DEVICE_PATH, _class_instance);
+	unregister_class_devname(CANVESC_OUTPUT_BASE_DEVICE_PATH, _class_instance);
 
 	perf_free(_cycle_perf);
 	//delete _telemetry;
@@ -68,7 +68,7 @@ int Canvesc::init()
 	}
 
 	// try to claim the generic PWM output device node as well - it's OK if we fail at this
-	_class_instance = register_class_devname(PWM_OUTPUT_BASE_DEVICE_PATH);
+	_class_instance = register_class_devname(CANVESC_OUTPUT_BASE_DEVICE_PATH);
 
 	if (_class_instance == CLASS_DEVICE_PRIMARY) {
 		// lets not be too verbose
@@ -80,6 +80,8 @@ int Canvesc::init()
 
 	// Getting initial parameter values
 	update_params();
+
+	set_mode(MODE_4PWM); // SP: This might want to be pulled from parameters
 
 	ScheduleNow();
 
@@ -158,24 +160,24 @@ int Canvesc::task_spawn(int argc, char *argv[])
 void Canvesc::enable_canvesc_outputs(const bool enabled)
 {
 	if (enabled && !_outputs_initialized && _output_mask != 0) {
-		CanvescConfig config = (CanvescConfig)_param_canvesc_config.get();
+		CanvescBusRate busRate = (CanvescBusRate)_param_canvesc_bus_rate.get();
 
-		unsigned int canvesc_frequency = CANVESC1000; //will is can bus frequency
+		unsigned int canvesc_bus_frequency = CANVESC1000;
 
-		switch (config) {
-		case CanvescConfig::Canvesc250:
-			canvesc_frequency = CANVESC250;
+		switch (busRate) {
+		case CanvescBusRate::Canvesc250:
+			canvesc_bus_frequency = CANVESC250;
 			break;
 
-		case CanvescConfig::Canvesc500:
-			canvesc_frequency = CANVESC500;
+		case CanvescBusRate::Canvesc500:
+			canvesc_bus_frequency = CANVESC500;
 			break;
 
 		default:
 			break;
 		}
 
-		int ret = up_canvesc_init(_output_mask, canvesc_frequency);
+		int ret = up_canvesc_init(_output_mask, canvesc_bus_frequency);
 
 		if (ret != 0) {
 			PX4_ERR("up_canvesc_init failed (%i)", ret);
@@ -457,9 +459,8 @@ void Canvesc::update_params()
 	updateParams();
 
 	// we use a minimum value of 1, since 0 is for disarmed
-	_mixing_output.setAllMinValues(math::constrain(static_cast<int>((_param_canvesc_min.get() *
-				       static_cast<float>(CANVESC_MAX_THROTTLE))),
-				       CANVESC_MIN_THROTTLE, CANVESC_MAX_THROTTLE));
+	_mixing_output.setAllMinValues(math::constrain(static_cast<int>((_param_canvesc_min.get() * static_cast<int>(CANVESC_MAX_THROTTLE))),
+							CANVESC_MIN_THROTTLE, CANVESC_MAX_THROTTLE));
 }
 
 int Canvesc::ioctl(file *filp, int cmd, unsigned long arg)
@@ -477,7 +478,7 @@ int Canvesc::ioctl(file *filp, int cmd, unsigned long arg)
 	switch (_mode) {
 	case MODE_1PWM:
 	case MODE_4PWM:
-		ret = pwm_ioctl(filp, cmd, arg);
+		ret = pwm_ioctl(filp, cmd, arg); //CHANGE THIS TO CAN BUS SEND. Look at UAVCAN driver
 		break;
 
 	default:
@@ -531,9 +532,9 @@ int Canvesc::print_status()
 
 	case MODE_NONE: mode_str = "no outputs"; break;
 
-	case MODE_1PWM: mode_str = "outputs1"; break;
+	case MODE_1PWM: mode_str = "1 motor output"; break;
 
-	case MODE_4PWM: mode_str = "outputs4"; break;
+	case MODE_4PWM: mode_str = "4 motor outputs"; break;
 
 	default:
 		break;
@@ -543,6 +544,11 @@ int Canvesc::print_status()
 		PX4_INFO("Mode: %s", mode_str);
 	}
 
+	PX4_INFO("Armed: %s", _mixing_output.armed().armed ? "yes" : "no");
+	PX4_INFO("Mixer loaded: %s", _mixing_output.mixers() ? "yes" : "no");
+	//PX4_INFO("bus_rate: %d", _param_canvesc_bus_rate);
+	//PX4_INFO("command_rate: %d", _param_canvesc_motor_rate);
+	//PX4_INFO("min output: %d", _param_canvesc_min);
 	PX4_INFO("Outputs initialized: %s", _outputs_initialized ? "yes" : "no");
 	PX4_INFO("Outputs on: %s", _outputs_on ? "yes" : "no");
 	perf_print_counter(_cycle_perf);

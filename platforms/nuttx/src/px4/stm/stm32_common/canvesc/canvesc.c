@@ -36,12 +36,12 @@
 #include <px4_platform_common/micro_hal.h>
 #include <stm32_dma.h>
 #include <stm32_tim.h>
-#include <drivers/drv_pwm_output.h>
+#include <drivers/drv_canvesc_output.h>
 //#include <px4_arch/canvesc.h>
 //#include <px4_arch/io_timer.h>
 //#include <drivers/drv_pwm_output.h>
 
-int up_canvesc_init(uint32_t channel_mask, unsigned canvesc_pwm_freq)
+int up_canvesc_init(uint32_t channel_mask, unsigned canvesc_bus_freq)
 {
 	/* Init channels */
 	int ret_val = OK;
@@ -65,7 +65,7 @@ static void canvesc_motor_data_set(uint32_t motor_number, uint16_t throttle, boo
 
 void up_canvesc_motor_data_set(unsigned motor_number, uint16_t throttle, bool telemetry)
 {
-	canvesc_motor_data_set(motor_number, throttle + DShot_cmd_MIN_throttle, telemetry);
+	canvesc_motor_data_set(motor_number, throttle + Canvesc_cmd_MIN_throttle, telemetry);
 }
 
 void up_canvesc_motor_command(unsigned channel, uint16_t command, bool telemetry)

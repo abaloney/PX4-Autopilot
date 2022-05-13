@@ -3,45 +3,48 @@ module_name: Canvesc Driver
 parameters:
     - group: Canvesc
       definitions:
-        CANVESC_CONFIG:
+        CANVESC_BUS_RATE:
             description:
-                short: Configure DShot
+                short: Configure Canvesc bus speed
                 long: |
-                    This enables/disables VESC control over the can bus. The different modes define different
-                    speeds, for example Canvesc50 = 50kb/s. Not all ESCs support all modes.
+                    This enables/disables standard can bus frames for controlling VESCs and servos. The different modes define different
+                    speeds, for example Canvesc250 = 250kb/s. Not all ESCs devices support all speeds.
 
                     Note: this enables Canvesc on the can bus.
             type: enum
             values:
                 0: Disable
-                50: Canvesc50
-                100: Canvesc100
-                200: Canvesc200
-                400: Canvesc400
+                250: Canvesc250
+                500: Canvesc500
+                1000: Canvesc1000
             reboot_required: true
-            default: 0
+            default: 1000
         CANVESC_MIN:
             description:
-                short: Minimum Canvesc Motor Output
+                short: Minimum RPM speed for VESC
                 long: |
-                    Minimum Output Value for Canvesc in percent. The value depends on the ESC. Make
-                    sure to set this high enough so that the motors are always spinning while
-                    armed.
-            type: float
-            unit: '%'
-            min: 0
-            max: 1
-            decimal: 2
-            increment: 0.01
-            default: 0.055
-        CANVESC_POLES: # only used by dshot so far, so keep it under the dshot group
-            description:
-                short: Number of magnetic poles of the motors
-                long: |
-                    Specify the number of magnetic poles of the motors.
-                    It is required to compute the RPM value from the eRPM returned with the ESC telemetry.
-
-                    Either get the number from the motor spec sheet or count the magnets on the bell of the motor (not the stator magnets).
-                    Typical motors for 5 inch props have 14 poles.
+                    Minimum speed in eRPM for VESC in percent when vehicle is armed. The value depends on the VESC. Make
+                    sure to set this high enough so that the motors are always spinning while armed.
             type: int32
-            default: 14
+            min: 0
+            max: 20000
+            increment: 1
+            default: 7000
+        CANVESC_PP:
+            description:
+                short: Number of magnetic poles pairs of the motors.
+                long: |
+                    Specify the number of magnetic pole pairs of the motors.
+                    It is required to compute the RPM value from the eRPM returned from VESC.
+
+                    Either get the number from the motor spec sheet or count the magnets on the bell of the motor (not the stator magnets) and divide by 2.
+                    Typical motors for 5 inch props have 14 poles and 7 pole pairs.
+            type: int32
+            default: 7
+        CANVESC_MOT_RATE:
+            description:
+                short: Rate for sending commands to motors in Hz
+                long: |
+                    Specify the update rate for motors
+            type: int32
+            default: 7

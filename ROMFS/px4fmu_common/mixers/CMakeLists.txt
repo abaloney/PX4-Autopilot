@@ -83,6 +83,7 @@ px4_add_romfs_files(
 	TF-AutoG2.main.mix
 	tilt_quad.aux.mix
 	tilt_quad.main.mix
+	traverse_subscale.main.mix
 	tri_y_yaw+.main.mix
 	tri_y_yaw-.main.mix
 	uuv_x.main.mix

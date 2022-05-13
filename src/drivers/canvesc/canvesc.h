@@ -34,6 +34,7 @@
 
 #include <drivers/device/device.h>
 #include <drivers/drv_input_capture.h>
+#include <drivers/drv_canvesc_output.h>
 #include <drivers/drv_mixer.h>
 #include <lib/mixer_module/mixer_module.hpp>
 #include <px4_platform_common/getopt.h>
@@ -44,7 +45,7 @@
 
 using namespace time_literals;
 
-#if !defined(BOARD_HAS_PWM)
+#if !defined(BOARD_HAS_PWM) //TODO: Change this to HAS_CAN
 #  error "board_config.h needs to define BOARD_HAS_PWM"
 #endif
 
@@ -57,80 +58,46 @@ static constexpr int CANVESC_DISARM_VALUE = 0;
 static constexpr int CANVESC_MIN_THROTTLE = 1;
 static constexpr int CANVESC_MAX_THROTTLE = 1999;
 
-typedef enum {
-	Canvesc_cmd_motor_stop = 0,
-	Canvesc_cmd_beacon1,
-	Canvesc_cmd_beacon2,
-	Canvesc_cmd_beacon3,
-	Canvesc_cmd_beacon4,
-	Canvesc_cmd_beacon5,
-	Canvesc_cmd_esc_info, // V2 includes settings
-	Canvesc_cmd_spin_direction_1,
-	Canvesc_cmd_spin_direction_2,
-	Canvesc_cmd_3d_mode_off,
-	Canvesc_cmd_3d_mode_on,
-	Canvesc_cmd_settings_request, // Currently not implemented
-	Canvesc_cmd_save_settings,
-	Canvesc_cmd_spin_direction_normal   = 20,
-	Canvesc_cmd_spin_direction_reversed = 21,
-	Canvesc_cmd_led0_on,      // BLHeli32 only
-	Canvesc_cmd_led1_on,      // BLHeli32 only
-	Canvesc_cmd_led2_on,      // BLHeli32 only
-	Canvesc_cmd_led3_on,      // BLHeli32 only
-	Canvesc_cmd_led0_off,     // BLHeli32 only
-	Canvesc_cmd_led1_off,     // BLHeli32 only
-	Canvesc_cmd_led2_off,     // BLHeli32 only
-	Canvesc_cmd_led4_off,     // BLHeli32 only
-	Canvesc_cmd_audio_stream_mode_on_off              = 30, // KISS audio Stream mode on/off
-	Canvesc_cmd_silent_mode_on_off                    = 31, // KISS silent Mode on/off
-	Canvesc_cmd_signal_line_telemeetry_disable        = 32,
-	Canvesc_cmd_signal_line_continuous_erpm_telemetry = 33,
-	Canvesc_cmd_MAX          = 47,     // >47 are throttle values
-	Canvesc_cmd_MIN_throttle = 48,
-	Canvesc_cmd_MAX_throttle = 2047
-} canvesc_command_t;
-
 /**
- * Intialise the Dshot outputs using the specified configuration.
+ * Intialise the Canvesc outputs using the specified configuration.
  *
- * @param channel_mask		Bitmask of channels (LSB = channel 0) to enable.
+ * @param bus_mask		Bitmask of can buses (LSB = channel 0) to enable.
  *				This allows some of the channels to remain configured
- *				as GPIOs or as another function.
- * @param dshot_pwm_freq	Frequency of DSHOT signal. Usually DSHOT150, DSHOT300, DSHOT600 or DSHOT1200
+ *				for UAVCAN or as another function.
+ * @param canvesc_bus_freq	Frequency of Can bus. Usually DSHOT250, DSHOT500, DSHOT1000
  * @return OK on success.
  */
-__EXPORT extern int up_canvesc_init(uint32_t channel_mask, unsigned dshot_pwm_freq);
+__EXPORT extern int up_canvesc_init(uint32_t bus_mask, unsigned canvesc_bus_freq);
 
 /**
- * Set the current dshot throttle value for a channel (motor).
+ * Set the current canvesc throttle value for a channel (motor).
  *
  * @param channel	The channel to set.
- * @param throttle	The output dshot throttle value in [0 = DSHOT_DISARM_VALUE, 1 = DSHOT_MIN_THROTTLE, 1999 = DSHOT_MAX_THROTTLE].
- * @param telemetry	If true, request telemetry from that motor
+ * @param throttle	The output canvesc throttle value in [0 = CANVESC_DISARM_VALUE, 1 = CANVESC_MIN_THROTTLE, 1999 = CANVESC_MAX_THROTTLE].
+ * @param telemetry	If true, request telemetry from that VESC
  */
 __EXPORT extern void up_canvesc_motor_data_set(unsigned channel, uint16_t throttle, bool telemetry);
 
 /**
- * Send DShot command to a channel (motor).
+ * Send Canvesc command to a channel (VESC).
  *
  * @param channel	The channel to set.
- * @param command	dshot_command_t
- * @param telemetry	If true, request telemetry from that motor
+ * @param command	canvesc_command_t
+ * @param telemetry	If true, request telemetry from that VESC
  */
 __EXPORT extern void up_canvesc_motor_command(unsigned channel, uint16_t command, bool telemetry);
 
 /**
- * Trigger dshot data transfer.
+ * Trigger canvesc data transfer.
  */
 __EXPORT extern void up_canvesc_trigger(void);
 
 /**
- * Arm or disarm dshot outputs (This will enable/disable complete timer for safety purpose.).
+ * Arm or disarm canvesc outputs (This will enable/disable complete timer for safety purpose.).
  *
- * When disarmed, dshot output no pulse.
+ * When disarmed, canvesc will output no messages.
  *
- * @param armed		If true, outputs are armed; if false they
- *			are disarmed.
+ * @param armed		If true, outputs are armed; if false they are armed.
  */
 __EXPORT extern int up_canvesc_arm(bool armed);
 
@@ -146,7 +113,7 @@ public:
 		MODE_4PWM,
 	};
 
-	/** Mode given via CLI */
+	/** Mode given via CLI */ // PROBABLY DON"T NEED THIS for canvesc
 	enum PortMode {
 		PORT_MODE_UNSET = 0,
 		PORT_FULL_GPIO,
@@ -201,7 +168,7 @@ private:
 	Canvesc operator=(const Canvesc &) = delete;
 
 	// can bus speed bit/s
-	enum class CanvescConfig {
+	enum class CanvescBusRate {
 		Disabled  = 0,
 		Canvesc250  = 250,
 		Canvesc500  = 500,
@@ -236,7 +203,7 @@ private:
 
 	int pwm_ioctl(file *filp, const int cmd, const unsigned long arg);
 
-	int request_esc_info();
+	//int request_esc_info();
 
 	void Run() override;
 
@@ -244,7 +211,7 @@ private:
 
 	//void update_telemetry_num_motors();
 
-	MixingOutput _mixing_output{DIRECT_PWM_OUTPUT_CHANNELS, *this, MixingOutput::SchedulingPolicy::Auto, false, false};
+	MixingOutput _mixing_output{DIRECT_PWM_OUTPUT_CHANNELS, *this, MixingOutput::SchedulingPolicy::Auto, false, true};
 
 	//Telemetry *_telemetry{nullptr};
 
@@ -273,8 +240,9 @@ private:
 	uORB::SubscriptionInterval _parameter_update_sub{ORB_ID(parameter_update), 1_s};
 
 	DEFINE_PARAMETERS(
-		(ParamInt<px4::params::CANVESC_CONFIG>)   _param_canvesc_config,
-		(ParamFloat<px4::params::CANVESC_MIN>)    _param_canvesc_min,
-		(ParamInt<px4::params::CANVESC_POLES>) _param_canvesc_mot_pole_count
+		(ParamInt<px4::params::CANVESC_BUS_RATE>)   	_param_canvesc_bus_rate,
+		(ParamInt<px4::params::CANVESC_MIN>)    	_param_canvesc_min,
+		(ParamInt<px4::params::CANVESC_PP>) 		_param_canvesc_mot_pole_pairs,
+		(ParamInt<px4::params::CANVESC_MOT_RATE>) 	_param_canvesc_motor_rate
 	)
 };
