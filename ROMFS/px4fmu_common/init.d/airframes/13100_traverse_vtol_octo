@@ -30,13 +30,16 @@ param set-default PWM_AUX_DIS5 950
 #param set-default PWM_MAIN_RATE 400
 param set-default CANVESC_RATE 100
 
+param set-default PWM_AUX_RATE 50
+
 param set-default VT_TYPE 2
 param set-default VT_MOT_ID 12345678
 param set-default VT_FW_MOT_OFFID 12345678
 set MAV_TYPE 22
 
-set MIXER octo_cox
+set MIXER traverse_subscale
 set MIXER_AUX vtol_AAERT
 
 #set PWM_OUT 12345678
 set CANVESC_OUT 12345678
+set OUTPUT_MODE canvesc
