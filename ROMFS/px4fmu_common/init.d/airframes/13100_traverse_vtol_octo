@@ -45,4 +45,5 @@ set MIXER_AUX vtol_AAERT
 
 #set PWM_OUT 12345678
 set CANVESC_OUT 12345678
-set OUTPUT_MODE canvesc
+#set OUTPUT_MODE canvesc
+set OUTPUT_MODE pwm_out
