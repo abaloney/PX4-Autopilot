@@ -1,0 +1,45 @@
+#!/bin/sh
+#
+# @name Traverse Subscale VTOL
+#
+# @type VTOL Octoplane
+# @class VTOL
+#
+# @output CAN0 motor 1
+# @output CAN0 motor 2
+# @output CAN0 motor 3
+# @output CAN0 motor 4
+# @output CAN0 motor 5
+# @output CAN0 motor 6
+# @output CAN0 motor 7
+# @output CAN0 motor 8
+# @output CAN0 Aileron 1
+# @output CAN0 Aileron 2
+# @output CAN0 Elevator
+# @output CAN0 Rudder
+# @output CAN0 Throttle
+#
+# @board px4_fmu-v2 exclude
+# @board bitcraze_crazyflie exclude
+#
+
+. ${R}etc/init.d/rc.vtol_defaults
+
+
+param set-default PWM_AUX_DIS5 950
+#param set-default PWM_MAIN_RATE 400
+param set-default CANVESC_RATE 100
+
+param set-default PWM_AUX_RATE 50
+
+param set-default VT_TYPE 2
+param set-default VT_MOT_ID 12345678
+param set-default VT_FW_MOT_OFFID 12345678
+set MAV_TYPE 22
+
+set MIXER traverse_subscale
+set MIXER_AUX vtol_AAERT
+
+#set PWM_OUT 12345678
+set CANVESC_OUT 12345678
+set OUTPUT_MODE canvesc
